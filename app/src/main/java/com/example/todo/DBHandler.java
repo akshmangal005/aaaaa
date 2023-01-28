@@ -2,8 +2,11 @@ package com.example.todo;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import java.util.ArrayList;
 
 public class DBHandler extends SQLiteOpenHelper {
 
@@ -23,6 +26,9 @@ public class DBHandler extends SQLiteOpenHelper {
     // below variable is for our task description column
     private static final String DES_COL = "description";
 
+    // below variable is for our task description column
+    private static final String TITLE_COL = "title";
+
     // creating a constructor for our database handler.
     public DBHandler(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -37,7 +43,7 @@ public class DBHandler extends SQLiteOpenHelper {
         // along with their data types.
         String query = "CREATE TABLE " + TABLE_NAME + " ("
                 + ID_COL + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + DES_COL + " TEXT)";
+                + DES_COL + " TEXT," + TITLE_COL + "TEXT)";
 
         // at last we are calling a exec sql
         // method to execute above sql query
@@ -45,7 +51,7 @@ public class DBHandler extends SQLiteOpenHelper {
     }
 
     // this method is use to add new course to our sqlite database.
-    public void addNewTask(String description) {
+    public void addNewTask(String description, String title) {
 
         // on below line we are creating a variable for
         // our sqlite database and calling writable method
@@ -59,7 +65,7 @@ public class DBHandler extends SQLiteOpenHelper {
         // on below line we are passing all values
         // along with its key and value pair.
         values.put(DES_COL, description);
-//        values.put(DURATION_COL, courseDuration);
+        values.put(TITLE_COL, title);
 //        values.put(DESCRIPTION_COL, courseDescription);
 //        values.put(TRACKS_COL, courseTracks);
 
@@ -71,6 +77,32 @@ public class DBHandler extends SQLiteOpenHelper {
         // database after adding database.
         db.close();
     }
+    // we have created a new method for reading all the courses.
+    public ArrayList<NotesModal> readNotes() {
+        // on below line we are creating a
+        // database for reading our database.
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // on below line we are creating a cursor with query to read data from database.
+        Cursor cursorNotes = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+
+        // on below line we are creating a new array list.
+        ArrayList<NotesModal> notesModalArrayList = new ArrayList<>();
+
+        // moving our cursor to first position.
+        if (cursorNotes.moveToFirst()) {
+            do {
+                // on below line we are adding the data from cursor to our array list.
+                notesModalArrayList.add(new NotesModal(cursorNotes.getString(1),cursorNotes.getString(4)));
+            } while (cursorNotes.moveToNext());
+            // moving our cursor to next.
+        }
+        // at last closing our cursor
+        // and returning our array list.
+        cursorNotes.close();
+        return notesModalArrayList;
+    }
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
